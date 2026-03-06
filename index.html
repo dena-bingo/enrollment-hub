@@ -121,7 +121,7 @@
     function PrevBadge() {
       return (
         <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 20, background: "#fff7ed", color: "#c2410c", fontSize: 11, fontWeight: 700, border: "1px solid #fed7aa", whiteSpace: "nowrap" }}>
-          ↩ Prev. enrolled
+          ↩ Transitioning
         </span>
       );
     }
@@ -193,14 +193,35 @@
         );
       }
 
+      const enrollPct = Math.round((enrolled / total) * 100);
+      const isEnrolledActive = activeFilter === "enrolled";
+
       return (
         <div>
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 38, fontWeight: 800, color: "#111827", lineHeight: 1 }}>{engPct}%</div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", marginTop: 3 }}>engagement rate</div>
-            <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 2 }}>
-              {enrolled + declined} of {total} have decided · {enrolled} enrolled + {declined} declined
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+              <div style={{ fontSize: 38, fontWeight: 800, color: "#111827", lineHeight: 1 }}>
+                {isEnrolledActive ? `${enrollPct}%` : `${engPct}%`}
+              </div>
+              {isEnrolledActive && (
+                <div style={{ fontSize: 12, color: "#9ca3af", paddingBottom: 2 }}>
+                  enrollment rate
+                  <span style={{ margin: "0 6px", color: "#e5e7eb" }}>·</span>
+                  <span style={{ color: "#d1d5db" }}>vs {engPct}% engagement</span>
+                </div>
+              )}
             </div>
+            <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 4 }}>
+              {isEnrolledActive
+                ? <>{enrolled} of {total} employees have enrolled</>
+                : <>{enrolled + declined} of {total} employees have enrolled or declined</>
+              }
+            </div>
+            {isEnrolledActive && (
+              <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 3, fontStyle: "italic" }}>
+                Enrollment rate only counts enrolled. Engagement rate includes declined.
+              </div>
+            )}
           </div>
           <div style={{ position: "relative", borderRadius: 6, overflow: "hidden", height: 8, background: "#e5e7eb", marginBottom: 14 }}>
             <div style={{ width: `${engPct}%`, height: "100%", background: "#16a34a", borderRadius: 6, transition: "width 0.4s ease" }} />
@@ -441,9 +462,10 @@
 
       const filtered = useMemo(() => {
         let list = employees.filter(e => {
-          const sm = filter === "All" || e.status === filter;
-          const pm = !showPrevOnly || e.prevEnrolled;
           const dm = !deadlineFilter || e.deadline === deadlineFilter;
+          // When filtering by deadline, show all statuses for that date
+          const sm = deadlineFilter ? true : (filter === "All" || e.status === filter);
+          const pm = !showPrevOnly || e.prevEnrolled;
           const sq = !searchQuery || e.name.toLowerCase().includes(searchQuery.toLowerCase()) || e.email.toLowerCase().includes(searchQuery.toLowerCase());
           return sm && pm && dm && sq;
         });
@@ -692,11 +714,6 @@
                   </div>
                 )}
               </div>
-              {!isComplete && (
-                <div style={{ marginTop: 16, padding: "10px 14px", background: "#f0f9ff", borderRadius: 8, fontSize: 12, color: "#0369a1", border: "1px solid #bae6fd" }}>
-                  <strong>100% engagement</strong> means every employee has made a decision — enrolled or officially declined. Both count.
-                </div>
-              )}
             </div>
 
             {/* Toolbar */}
@@ -726,7 +743,7 @@
               <button
                 onClick={() => setShowPrevOnly(!showPrevOnly)}
                 style={{ padding: "7px 13px", fontSize: 12, fontWeight: 600, cursor: "pointer", background: showPrevOnly ? "#fff7ed" : "#fff", color: showPrevOnly ? "#c2410c" : "#374151", border: showPrevOnly ? "1px solid #fed7aa" : "1px solid #d1d5db", borderRadius: 8, fontFamily: "inherit" }}>
-                ↩ Prev. enrolled {showPrevOnly ? "✓" : ""}
+                ↩ Transitioning {showPrevOnly ? "✓" : ""}
               </button>
               {deadlineFilter && (
                 <button onClick={() => setDeadlineFilter(null)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 13px", fontSize: 12, fontWeight: 600, cursor: "pointer", background: "#f5f3ff", color: "#4338ca", border: "1px solid #c7d2fe", borderRadius: 8, fontFamily: "inherit" }}>
@@ -846,7 +863,7 @@
 
             <div style={{ marginTop: 12, fontSize: 11, color: "#9ca3af", display: "flex", gap: 20, flexWrap: "wrap" }}>
               <span>🟡 Yellow row = deadline within 5 days</span>
-              <span>↩ Previously enrolled = migrating from prior group coverage</span>
+              <span>↩ Transitioning = moving from a prior group plan</span>
               <span>Nudge available for: invite unopened · invite opened · plan in cart</span>
             </div>
           </div>
