@@ -71,11 +71,20 @@
       { id: 11, name: "Kelly Kapoor",     email: "kkapoor@dundermifflin.com",   startDate: "Dec 02, 2024", status: "viewing_plans", prevEnrolled: false, deadline: "Apr 7",  daysLeft: 2,    coverageCutoff: "Mar 29", coverageIfNow: "Apr 1", coverageIfLate: "May 1", nudgedAt: null },
       // Deadline further out, before cutoff
       { id: 12, name: "Toby Flenderson",  email: "tflenderson@dundermifflin.com",startDate: "Nov 07, 2022", status: "invite_sent",  prevEnrolled: false, deadline: "Apr 7",  daysLeft: 12,   coverageCutoff: "Mar 29", coverageIfNow: "Apr 1", coverageIfLate: "May 1", nudgedAt: null },
-      { id: 13, name: "Meredith Palmer",  email: "mpalmer@dundermifflin.com",   startDate: "May 09, 2022", status: "viewing_plans", prevEnrolled: true,  deadline: "Apr 7",  daysLeft: 12,   coverageCutoff: "Mar 29", coverageIfNow: "Apr 1", coverageIfLate: "May 1", nudgedAt: null },
-      { id: 14, name: "Creed Bratton",    email: "cbratton@dundermifflin.com",  startDate: "Jan 15, 2022", status: "invite_expired", prevEnrolled: false, deadline: null,    daysLeft: null, coverageCutoff: null,   coverageIfNow: null,    coverageIfLate: null,   nudgedAt: null },
-      // Deadline in 2 days — still before Mar 29 coverage cutoff, so Apr 1 coverage is achievable
-      { id: 16, name: "Darryl Philbin",   email: "dphilbin@dundermifflin.com",  startDate: "Mar 01, 2023", status: "invite_opened", prevEnrolled: false, deadline: daysFromNow(2), daysLeft: 2, coverageCutoff: null,     coverageIfNow: "Apr 1", coverageIfLate: null,    nudgedAt: null },
-      { id: 17, name: "Andy Bernard",     email: "abernard@dundermifflin.com",  startDate: "Jun 15, 2022", status: "invite_sent",   prevEnrolled: false, deadline: daysFromNow(2), daysLeft: 2, coverageCutoff: null,     coverageIfNow: "Apr 1", coverageIfLate: null,    nudgedAt: null },
+      { id: 13, name: "Meredith Palmer",  email: "mpalmer@dundermifflin.com",   startDate: "May 09, 2022", status: "viewing_plans",  prevEnrolled: true,  deadline: "Apr 7",  daysLeft: 12, coverageCutoff: "Mar 29", coverageIfNow: "Apr 1", coverageIfLate: "May 1", nudgedAt: null },
+      { id: 14, name: "Creed Bratton",    email: "cbratton@dundermifflin.com",  startDate: "Jan 15, 2022", status: "invite_expired", prevEnrolled: false, deadline: null,     daysLeft: null, coverageCutoff: null,     coverageIfNow: null,    coverageIfLate: null,   nudgedAt: null },
+      { id: 16, name: "Darryl Philbin",   email: "dphilbin@dundermifflin.com",  startDate: "Mar 01, 2023", status: "invite_opened",  prevEnrolled: false, deadline: daysFromNow(2), daysLeft: 2, coverageCutoff: null, coverageIfNow: "Apr 1", coverageIfLate: null,   nudgedAt: null },
+      { id: 17, name: "Andy Bernard",     email: "abernard@dundermifflin.com",  startDate: "Jun 15, 2022", status: "invite_sent",    prevEnrolled: false, deadline: daysFromNow(2), daysLeft: 2, coverageCutoff: null, coverageIfNow: "Apr 1", coverageIfLate: null,   nudgedAt: null },
+      // Scenario 1: window entirely before cutoff — no split
+      { id: 18, name: "S1 · Erin Hannon",      email: "ehannon@dundermifflin.com",   startDate: "Feb 01, 2023", status: "invite_sent",    prevEnrolled: false, deadline: "Mar 20", daysLeft: null, coverageCutoff: "Mar 29", coverageIfNow: "Apr 1", coverageIfLate: null,   nudgedAt: null },
+      // Scenario 2: window spans cutoff — two outcomes
+      { id: 19, name: "S2 · Gabe Lewis",        email: "glewis@dundermifflin.com",    startDate: "Feb 01, 2023", status: "invite_opened",  prevEnrolled: false, deadline: "Apr 7",  daysLeft: null, coverageCutoff: "Mar 29", coverageIfNow: "Apr 1", coverageIfLate: "May 1", nudgedAt: null },
+      // Scenario 3: deadline = cutoff exactly — no split
+      { id: 20, name: "S3 · Robert California", email: "rcalifornia@dundermifflin.com",startDate: "Feb 01, 2023", status: "viewing_plans",  prevEnrolled: false, deadline: "Mar 29", daysLeft: null, coverageCutoff: "Mar 29", coverageIfNow: "Apr 1", coverageIfLate: null,   nudgedAt: null },
+      // Scenario 4: window spans into third month — deadline May 15
+      { id: 21, name: "S4 · David Wallace",      email: "dwallace@dundermifflin.com",  startDate: "Feb 01, 2023", status: "invite_sent",    prevEnrolled: false, deadline: "May 15", daysLeft: null, coverageCutoff: "Mar 29", coverageIfNow: "Apr 1", coverageIfLate: "May 1", nudgedAt: null },
+      // Scenario 5: past cutoff already — only one outcome, no tooltip
+      { id: 22, name: "S5 · Todd Packer",        email: "tpacker@dundermifflin.com",   startDate: "Feb 01, 2023", status: "plan_in_cart",   prevEnrolled: false, deadline: "Apr 7",  daysLeft: null, coverageCutoff: "Mar 29", coverageIfNow: "Apr 1", coverageIfLate: "May 1", nudgedAt: null },
     ];
 
     // 2025 data — OE complete, 90% engagement (12/13 decided: 11 enrolled + 1 declined, 1 invite expired)
@@ -187,23 +196,19 @@
     }
 
     // Dynamically compute what coverage date an employee will get if they enroll today
-    // Rule: enroll before EOM-2 → coverage 1st of next month; after EOM-2 → 1st of month after that
     function computeCoverageDate(e) {
       if (!e.deadline) return null;
       const cutoffDays = daysUntil(e.coverageCutoff);
       const onTrack    = e.coverageCutoff !== null && cutoffDays !== null && cutoffDays > 0;
       if (onTrack) {
-        // Still before coverage cutoff — coverage starts next month after cutoff month
         return firstOfNextMonth(e.coverageCutoff);
       } else if (e.coverageCutoff) {
-        // Past the coverage cutoff — coverage starts the month after that
         const cutoff = parseDate(e.coverageCutoff);
         if (!cutoff) return null;
         const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
         const twoAfter = new Date(cutoff.getFullYear(), cutoff.getMonth() + 2, 1);
         return `${months[twoAfter.getMonth()]} 1`;
       } else {
-        // No cutoff defined — coverage starts next month after enrollment deadline
         return firstOfNextMonth(e.deadline);
       }
     }
@@ -231,7 +236,7 @@
       const coverageDate = computeCoverageDate(e);
       const urgent       = actionDays !== null && actionDays <= 3;
       const pastDeadline = deadlineDays !== null && deadlineDays <= 0;
-      const hasSecondary = onTrack; // only show secondary when cutoff != deadline
+      const hasSecondary = true; // always show tooltip when deadline exists
 
       if (pastDeadline) return <span style={{ fontSize: 12, color: "#d1d5db" }}>Deadline passed</span>;
 
@@ -253,14 +258,65 @@
 
       // Option 1: Tooltip
       if (variant === "tooltip") {
-        // Compute what coverage they'd get if enrolling after the cutoff
-        const lateCoverage = (function() {
-          if (!e.coverageCutoff) return null;
-          const cutoff = parseDate(e.coverageCutoff);
-          if (!cutoff) return null;
-          const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-          const twoAfter = new Date(cutoff.getFullYear(), cutoff.getMonth() + 2, 1);
-          return `${months[twoAfter.getMonth()]} 1`;
+        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+        // Build all coverage windows between the first cutoff and enrollment deadline
+        // Each window: { from, to, coverage }
+        const windows = (() => {
+          if (!e.deadline) return [];
+          const deadline = parseDate(e.deadline);
+          if (!deadline) return [];
+
+          // No cutoff — single coverage outcome
+          if (!e.coverageCutoff) {
+            return [{ label: `Enroll by ${months[deadline.getMonth()]} ${deadline.getDate()}`, coverage: coverageDate }];
+          }
+          const result = [];
+          let cutoff = parseDate(e.coverageCutoff);
+          if (!cutoff) return [];
+
+          // First window: now → first cutoff → coverage = 1st of cutoff's next month
+          let windowStart = null; // "now" implied, shown as "Enroll by {cutoff}"
+          let windowEnd = cutoff;
+          let coverageMonth = new Date(cutoff.getFullYear(), cutoff.getMonth() + 1, 1);
+          result.push({
+            label: `Enroll by ${months[cutoff.getMonth()]} ${cutoff.getDate()}`,
+            coverage: `${months[coverageMonth.getMonth()]} 1`,
+          });
+
+          // Walk forward through subsequent EOM-2 cutoffs until past deadline
+          while (true) {
+            // Next cutoff: EOM-2 of the month after the current cutoff
+            const nextMonth = new Date(cutoff.getFullYear(), cutoff.getMonth() + 1, 1);
+            const nextEOM = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0); // last day of nextMonth
+            const nextCutoff = new Date(nextEOM.getFullYear(), nextEOM.getMonth(), nextEOM.getDate() - 2);
+
+            if (nextCutoff >= deadline) {
+              // Remaining window: day after current cutoff → deadline
+              const from = new Date(cutoff.getFullYear(), cutoff.getMonth(), cutoff.getDate() + 1);
+              const fromStr = `${months[from.getMonth()]} ${from.getDate()}`;
+              const toStr = `${months[deadline.getMonth()]} ${deadline.getDate()}`;
+              // Coverage = 1st of the month after nextMonth
+              const cov = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 1);
+              result.push({
+                label: `Enroll ${fromStr}–${toStr}`,
+                coverage: `${months[cov.getMonth()]} 1`,
+              });
+              break;
+            } else {
+              // Window: day after current cutoff → next cutoff
+              const from = new Date(cutoff.getFullYear(), cutoff.getMonth(), cutoff.getDate() + 1);
+              const fromStr = `${months[from.getMonth()]} ${from.getDate()}`;
+              const toStr = `${months[nextCutoff.getMonth()]} ${nextCutoff.getDate()}`;
+              const cov = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 1);
+              result.push({
+                label: `Enroll ${fromStr}–${toStr}`,
+                coverage: `${months[cov.getMonth()]} 1`,
+              });
+              cutoff = nextCutoff;
+            }
+          }
+          return result;
         })();
 
         return (
@@ -280,10 +336,11 @@
                 transition: "opacity 0.12s", zIndex: 30,
               }}>
                 <div style={{ fontWeight: 600, marginBottom: 6 }}>Enrollment deadline: {e.deadline}</div>
-                <div style={{ color: "#9ca3af" }}>Enroll by {actionDate} <span style={{ color: "#fff", margin: "0 4px" }}>→</span> {coverageDate} coverage</div>
-                {lateCoverage && (
-                  <div style={{ color: "#9ca3af", marginTop: 2 }}>Enroll {actionDate}–{e.deadline} <span style={{ color: "#fff", margin: "0 4px" }}>→</span> {lateCoverage} coverage</div>
-                )}
+                {windows.map((w, i) => (
+                  <div key={i} style={{ color: "#9ca3af", marginTop: i > 0 ? 2 : 0 }}>
+                    {w.label} <span style={{ color: "#fff", margin: "0 4px" }}>→</span> {w.coverage} coverage
+                  </div>
+                ))}
                 <div style={{ position: "absolute", top: "100%", left: 16, width: 0, height: 0, borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "5px solid #111827" }} />
               </div>
             )}
@@ -696,9 +753,10 @@
 
       const filtered = useMemo(() => {
         let list = employees.filter(e => {
-          const relevantDate = (e.coverageCutoff && daysUntil(e.coverageCutoff) > 0) ? e.coverageCutoff : e.deadline;
+          const cutoffDays   = daysUntil(e.coverageCutoff);
+          const onTrack      = e.coverageCutoff !== null && cutoffDays !== null && cutoffDays > 0;
+          const relevantDate = onTrack ? e.coverageCutoff : e.deadline;
           const dm = !deadlineFilter || relevantDate === deadlineFilter;
-          // When filtering by deadline, show all statuses for that date
           const sm = deadlineFilter ? true : (filter === "All" || e.status === filter);
           const pm = !showPrevOnly || e.prevEnrolled;
           const sq = !searchQuery || e.name.toLowerCase().includes(searchQuery.toLowerCase()) || e.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -706,8 +764,10 @@
         });
         if (sortBy === "deadline") {
           list = [...list].sort((a, b) => {
-            const aDate = (a.coverageCutoff && daysUntil(a.coverageCutoff) > 0) ? a.coverageCutoff : a.deadline;
-            const bDate = (b.coverageCutoff && daysUntil(b.coverageCutoff) > 0) ? b.coverageCutoff : b.deadline;
+            const aOnTrack = a.coverageCutoff && daysUntil(a.coverageCutoff) > 0;
+            const bOnTrack = b.coverageCutoff && daysUntil(b.coverageCutoff) > 0;
+            const aDate = aOnTrack ? a.coverageCutoff : a.deadline;
+            const bDate = bOnTrack ? b.coverageCutoff : b.deadline;
             const aDays = daysUntil(aDate);
             const bDays = daysUntil(bDate);
             if (aDays === null && bDays === null) return 0;
@@ -1009,8 +1069,8 @@
             </div>
 
             {/* Table */}
-            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", overflow: "hidden" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "36px 2.5fr 1.8fr 2fr 1.2fr", padding: "10px 16px", background: "#f9fafb", borderBottom: "1px solid #e5e7eb", fontSize: 13, fontWeight: 400, color: "#6b7280", alignItems: "center", gap: 8 }}>
+            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", overflow: "visible" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "36px 2.5fr 1.8fr 2fr 1.2fr", padding: "10px 16px", background: "#f9fafb", borderBottom: "1px solid #e5e7eb", fontSize: 13, fontWeight: 400, color: "#6b7280", alignItems: "center", gap: 8, borderRadius: "12px 12px 0 0" }}>
                 <div>
                   <input type="checkbox"
                     checked={nudgeableFiltered.length > 0 && nudgeableFiltered.every(e => selected.includes(e.id))}
