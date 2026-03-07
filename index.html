@@ -55,14 +55,14 @@
     }
 
     const INITIAL_EMPLOYEES = [
-      { id: 1,  name: "Michael Scott",    email: "mscott@dundermifflin.com",   startDate: "Jan 12, 2023", status: "enrolled",      prevEnrolled: true,  deadline: null,     daysLeft: null, coverageCutoff: null,   coverageIfNow: null,    coverageIfLate: null,   nudgedAt: null },
-      { id: 2,  name: "Jim Halpert",      email: "jhalpert@dundermifflin.com",  startDate: "Mar 06, 2023", status: "enrolled",      prevEnrolled: false, deadline: null,     daysLeft: null, coverageCutoff: null,   coverageIfNow: null,    coverageIfLate: null,   nudgedAt: null },
-      { id: 3,  name: "Pam Beesly",       email: "pbeesly@dundermifflin.com",   startDate: "Nov 07, 2022", status: "enrolled",      prevEnrolled: true,  deadline: null,     daysLeft: null, coverageCutoff: null,   coverageIfNow: null,    coverageIfLate: null,   nudgedAt: null },
-      { id: 4,  name: "Dwight Schrute",   email: "dschrute@dundermifflin.com",  startDate: "Dec 02, 2024", status: "enrolled",      prevEnrolled: false, deadline: null,     daysLeft: null, coverageCutoff: null,   coverageIfNow: null,    coverageIfLate: null,   nudgedAt: null },
-      { id: 5,  name: "Angela Martin",    email: "amartin@dundermifflin.com",   startDate: "Nov 10, 2025", status: "enrolled",      prevEnrolled: false, deadline: null,     daysLeft: null, coverageCutoff: null,   coverageIfNow: null,    coverageIfLate: null,   nudgedAt: null },
-      { id: 6,  name: "Stanley Hudson",   email: "shudson@dundermifflin.com",   startDate: "Jan 07, 2022", status: "declined",      prevEnrolled: true,  deadline: null,     daysLeft: null, coverageCutoff: null,   coverageIfNow: null,    coverageIfLate: null,   nudgedAt: null },
-      { id: 7,  name: "Phyllis Vance",    email: "pvance@dundermifflin.com",    startDate: "May 09, 2022", status: "declined",      prevEnrolled: true,  deadline: null,     daysLeft: null, coverageCutoff: null,   coverageIfNow: null,    coverageIfLate: null,   nudgedAt: null },
-      { id: 8,  name: "Oscar Martinez",   email: "omartinez@dundermifflin.com", startDate: "Aug 28, 2023", status: "enrolled",      prevEnrolled: false, deadline: null,     daysLeft: null, coverageCutoff: null,   coverageIfNow: null,    coverageIfLate: null,   nudgedAt: null },
+      { id: 1,  name: "Michael Scott",    email: "mscott@dundermifflin.com",   startDate: "Jan 12, 2023", status: "enrolled",      prevEnrolled: true,  deadline: null, daysLeft: null, coverageCutoff: null, coverageIfNow: null, coverageIfLate: null, coverageStart: "Apr 1",  nudgedAt: null },
+      { id: 2,  name: "Jim Halpert",      email: "jhalpert@dundermifflin.com",  startDate: "Mar 06, 2023", status: "enrolled",      prevEnrolled: false, deadline: null, daysLeft: null, coverageCutoff: null, coverageIfNow: null, coverageIfLate: null, coverageStart: "Apr 1",  nudgedAt: null },
+      { id: 3,  name: "Pam Beesly",       email: "pbeesly@dundermifflin.com",   startDate: "Nov 07, 2022", status: "enrolled",      prevEnrolled: true,  deadline: null, daysLeft: null, coverageCutoff: null, coverageIfNow: null, coverageIfLate: null, coverageStart: "Apr 1",  nudgedAt: null },
+      { id: 4,  name: "Dwight Schrute",   email: "dschrute@dundermifflin.com",  startDate: "Dec 02, 2024", status: "enrolled",      prevEnrolled: false, deadline: null, daysLeft: null, coverageCutoff: null, coverageIfNow: null, coverageIfLate: null, coverageStart: "Apr 1",  nudgedAt: null },
+      { id: 5,  name: "Angela Martin",    email: "amartin@dundermifflin.com",   startDate: "Nov 10, 2025", status: "enrolled",      prevEnrolled: false, deadline: null, daysLeft: null, coverageCutoff: null, coverageIfNow: null, coverageIfLate: null, coverageStart: "May 1",  nudgedAt: null },
+      { id: 6,  name: "Stanley Hudson",   email: "shudson@dundermifflin.com",   startDate: "Jan 07, 2022", status: "declined",      prevEnrolled: true,  deadline: null, daysLeft: null, coverageCutoff: null, coverageIfNow: null, coverageIfLate: null, coverageStart: null,     nudgedAt: null },
+      { id: 7,  name: "Phyllis Vance",    email: "pvance@dundermifflin.com",    startDate: "May 09, 2022", status: "declined",      prevEnrolled: true,  deadline: null, daysLeft: null, coverageCutoff: null, coverageIfNow: null, coverageIfLate: null, coverageStart: null,     nudgedAt: null },
+      { id: 8,  name: "Oscar Martinez",   email: "omartinez@dundermifflin.com", startDate: "Aug 28, 2023", status: "enrolled",      prevEnrolled: false, deadline: null, daysLeft: null, coverageCutoff: null, coverageIfNow: null, coverageIfLate: null, coverageStart: "Apr 1",  nudgedAt: null },
       // Before coverage cutoff — act now = Apr 1 coverage
       { id: 9,  name: "Kevin Malone",     email: "kmalone@dundermifflin.com",   startDate: "Aug 28, 2023", status: "plan_in_cart",  prevEnrolled: false, deadline: "Apr 7",  daysLeft: 12,   coverageCutoff: "Mar 29", coverageIfNow: "Apr 1", coverageIfLate: "May 1", nudgedAt: null },
       // Past coverage cutoff — coverage will start May 1 regardless
@@ -209,6 +209,18 @@
     }
 
     function DeadlineCell({ e, variant }) {
+      // Enrolled employees — show when coverage starts
+      if (e.status === "enrolled") {
+        const coverageStart = e.coverageStart || null;
+        if (!coverageStart) return <span style={{ fontSize: 12, color: "#d1d5db" }}>—</span>;
+        return (
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#16a34a" }}>{coverageStart}</div>
+            <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }}>Coverage starts</div>
+          </div>
+        );
+      }
+
       if (!e.deadline) return <span style={{ fontSize: 12, color: "#d1d5db" }}>—</span>;
 
       const cutoffDays   = daysUntil(e.coverageCutoff);
